@@ -1,5 +1,5 @@
 import { useI18n } from '../i18n.jsx'
-import CarSideView from './CarSideView.jsx'
+import CarSideView from '../components/CarSideView.jsx'
 
 // ITU Ayazağa Campus — approx. 41.1054, 29.0244
 const lat = 41.1054

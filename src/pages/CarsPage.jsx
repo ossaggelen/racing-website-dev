@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useI18n } from '../i18n.jsx'
-import CarSideView from './CarSideView.jsx'
+import CarSideView from '../components/CarSideView.jsx'
 
 const years = [2025, 2024, 2023, 2021, 2018, 2015, 2010]
 
