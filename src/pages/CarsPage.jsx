@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useI18n } from '../i18n.jsx'
-import CarSideView from './CarSideView.jsx'
+import CarSideView from '../components/CarSideView.jsx'
 import { client, urlFor } from '../sanityClient.js'
 import { PortableText } from '@portabletext/react'
 
@@ -21,18 +21,32 @@ function SponsorTier({ title, items, bg, size = 'md' }) {
           {title}
         </h3>
         <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-          {items.map((logoItem, idx) => (
-            <div
-              key={idx}
-              className={`${sizeClasses[size]} bg-white/[0.04] border border-white/10 rounded flex items-center justify-center hover:border-accent/60 hover:bg-white/[0.07] transition`}
-            >
-              {logoItem.secure_url ? (
-                <img src={logoItem.secure_url} alt="Sponsor Logo" className="max-h-full max-w-full object-contain mix-blend-screen" />
-              ) : (
-                <span className="text-white/50 text-xs">Logo Yok</span>
-              )}
-            </div>
-          ))}
+          {items.map((logoItem, idx) => {
+            // Check if it's the new schema (object with .logo and .url) or old schema (direct cloudinary.asset)
+            const isNewSchema = !!logoItem.logo;
+            const logoUrl = isNewSchema ? logoItem.logo.secure_url : logoItem.secure_url;
+            const link = isNewSchema ? logoItem.url : undefined;
+            
+            const content = (
+              <div
+                className={`${sizeClasses[size]} rounded flex items-center justify-center hover:scale-105 transition-transform duration-300`}
+              >
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Sponsor Logo" className="max-h-full max-w-full object-contain" />
+                ) : (
+                  <span className="text-white/50 text-xs">Logo Yok</span>
+                )}
+              </div>
+            );
+
+            return link ? (
+              <a key={idx} href={link} target="_blank" rel="noopener noreferrer">
+                {content}
+              </a>
+            ) : (
+              <div key={idx}>{content}</div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -47,10 +61,10 @@ function ScrollableGallery({ images }) {
     const { left, width } = containerRef.current.getBoundingClientRect()
     const x = e.clientX - left
     const percentage = Math.max(0, Math.min(1, x / width))
-    
+
     const scrollWidth = containerRef.current.scrollWidth
     const maxScroll = scrollWidth - width
-    
+
     containerRef.current.scrollTo({
       left: maxScroll * percentage,
       behavior: 'auto'
@@ -60,19 +74,19 @@ function ScrollableGallery({ images }) {
   if (!images || images.length === 0) return null;
 
   return (
-    <div 
+    <div
       className="w-full relative overflow-hidden rounded-xl ring-1 ring-white/10 cursor-ew-resize group mt-4"
       onMouseMove={handleMouseMove}
     >
-      <div 
+      <div
         ref={containerRef}
         className="flex overflow-x-hidden w-full h-32 md:h-48"
         style={{ scrollBehavior: 'auto' }}
       >
         {images.map((img, i) => (
-          <img 
-            key={i} 
-            src={img.secure_url} 
+          <img
+            key={i}
+            src={img.secure_url}
             alt={`Gallery item ${i}`}
             className="h-full w-auto object-cover flex-shrink-0 border-r border-white/5"
             draggable="false"
@@ -125,9 +139,9 @@ export default function CarsPage() {
       year: 2025,
       races: [{ name: 'Formula ATA 2025' }],
       specs: [
-        { label: {tr: 'AĞIRLIK', en: 'WEIGHT'}, value: '200 kg' },
-        { label: {tr: 'GÜÇ', en: 'POWER'}, value: '80 kW' },
-        { label: {tr: 'MAX. HIZ', en: 'TOP SPEED'}, value: '120 km/h' },
+        { label: { tr: 'AĞIRLIK', en: 'WEIGHT' }, value: '200 kg' },
+        { label: { tr: 'GÜÇ', en: 'POWER' }, value: '80 kW' },
+        { label: { tr: 'MAX. HIZ', en: 'TOP SPEED' }, value: '120 km/h' },
       ],
       description: { tr: [{ _type: 'block', children: [{ _type: 'span', text: 'IST25 Mock Verisi (Sanity boş olduğunda gösterilir).' }] }] },
       sponsorTiers: []
@@ -137,10 +151,10 @@ export default function CarsPage() {
       year: 2023,
       races: [{ name: 'Formula STUDENT EAST 2023' }, { name: 'Formula Student CZECH 2022' }],
       specs: [
-        { label: {tr: 'HIZLANMA', en: 'ACCELERATION'}, value: '2.4 sn' },
-        { label: {tr: 'GÜÇ', en: 'POWER'}, value: '80 kw' },
-        { label: {tr: 'MAX. HIZ', en: 'TOP SPEED'}, value: '164 km/h' },
-        { label: {tr: 'TORK', en: 'TORQUE'}, value: '330 nm' },
+        { label: { tr: 'HIZLANMA', en: 'ACCELERATION' }, value: '2.4 sn' },
+        { label: { tr: 'GÜÇ', en: 'POWER' }, value: '80 kw' },
+        { label: { tr: 'MAX. HIZ', en: 'TOP SPEED' }, value: '164 km/h' },
+        { label: { tr: 'TORK', en: 'TORQUE' }, value: '330 nm' },
       ],
       description: { tr: [{ _type: 'block', children: [{ _type: 'span', text: 'Beelectric 02 mock verisi.' }] }] },
       sponsorTiers: []
@@ -151,7 +165,7 @@ export default function CarsPage() {
   useEffect(() => {
     setVehicles(mockVehicles)
     setActiveYear(mockVehicles[0].year)
-    
+
     // Fetch real data and settings in background
     Promise.all([
       client.fetch(`*[_type == "vehicle"] | order(year desc)`),
@@ -183,42 +197,41 @@ export default function CarsPage() {
   return (
     <div className="bg-bg min-h-screen font-display">
       {/* Hero Section */}
-      <section className="relative pt-0 pb-8 px-6 overflow-hidden flex flex-col items-center">
+      <section className="relative pt-0 pb-0 px-6 overflow-hidden">
         {/* Glow effects matching the screenshot (Cyan left, Red/Pink right) */}
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/20 blur-[150px] rounded-full pointer-events-none" />
         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/20 blur-[150px] rounded-full pointer-events-none" />
-        
-        <div className="relative w-full max-w-7xl mx-auto z-10 flex flex-col mb-12">
+
+        <div className="relative max-w-6xl mx-auto z-10 flex flex-col mb-4">
           <div className="w-full drop-shadow-[0_20px_50px_rgba(45,212,220,0.3)]">
             {settings?.carsPageSymbolicHero?.secure_url ? (
-              <img src={settings.carsPageSymbolicHero.secure_url} alt="Symbolic Hero" className="w-full h-auto object-contain" />
+              <img src={settings.carsPageSymbolicHero.secure_url} alt="Symbolic Hero" className="w-full h-auto max-h-[85vh] object-contain" />
             ) : (
-              <CarSideView className="w-full h-auto" />
+              <CarSideView className="w-full h-auto max-h-[85vh]" />
             )}
           </div>
-          <h1 className="font-extrabold text-6xl md:text-[7.5rem] tracking-widest text-white uppercase drop-shadow-lg absolute bottom-4 left-4 md:bottom-12 md:left-12 z-20">
+          <h1 className="font-extrabold text-6xl md:text-[6rem] tracking-widest text-white uppercase drop-shadow-lg absolute bottom-0 left-0 md:bottom-2 md:left-6 z-20 leading-none">
             {activeVehicle.name}
           </h1>
         </div>
       </section>
 
       {/* Year Selector / Timeline */}
-      <div ref={timelineRef} className="relative border-b-2 border-white/10 mt-8 mb-16">
+      <div ref={timelineRef} className="relative border-b-2 border-white/10 mt-2 mb-16">
         {/* Cyan/Red active line overlay on the border */}
         <div className="absolute bottom-[-2px] left-0 w-full h-[2px] flex">
-           <div className="bg-[#ff0033] h-full transition-all duration-500 ease-out" style={{ width: `${lineJunction}%` }} />
-           <div className="bg-accent h-full transition-all duration-500 ease-out" style={{ width: `${100 - lineJunction}%` }} />
+          <div className="bg-[#ff0033] h-full transition-all duration-500 ease-out" style={{ width: `${lineJunction}%` }} />
+          <div className="bg-accent h-full transition-all duration-500 ease-out" style={{ width: `${100 - lineJunction}%` }} />
         </div>
-        <div className="max-w-5xl mx-auto px-6 relative z-10 -mb-[2px]">
-          <div className="flex justify-center items-center gap-10 md:gap-16 overflow-x-auto scrollbar-hide">
+        <div className="max-w-5xl mx-auto px-2 md:px-6 relative z-10 -mb-[2px]">
+          <div className="flex justify-start md:justify-center items-center gap-6 md:gap-12 overflow-x-auto scrollbar-hide pb-1 px-4">
             {yearsList.map((y) => (
               <button
                 key={y}
                 data-active={y === activeYear}
                 onClick={() => setActiveYear(y)}
-                className={`relative py-4 px-2 text-lg md:text-xl font-bold tracking-wider transition ${
-                  y === activeYear ? 'text-white' : 'text-white/40 hover:text-white/80'
-                }`}
+                className={`relative py-4 px-2 text-lg md:text-xl font-bold tracking-wider transition ${y === activeYear ? 'text-white' : 'text-white/40 hover:text-white/80'
+                  }`}
               >
                 {y}
               </button>
@@ -232,8 +245,8 @@ export default function CarsPage() {
         <div className="w-full">
           {activeVehicle.heroImage?.secure_url ? (
             <div className="w-full aspect-video rounded-xl ring-1 ring-white/10 overflow-hidden bg-black/50">
-              <img 
-                src={activeVehicle.heroImage.secure_url} 
+              <img
+                src={activeVehicle.heroImage.secure_url}
                 alt={`${activeVehicle.name} Main Photo`}
                 className="w-full h-full object-cover"
               />
@@ -257,16 +270,31 @@ export default function CarsPage() {
             <div>
               <h3 className="font-display text-accent text-xl font-bold tracking-wide mb-3">Yarışlar</h3>
               <div className="bg-[#0c1015] rounded-lg ring-1 ring-white/10 p-6 flex flex-wrap items-center justify-around gap-8">
-                {activeVehicle.races.map((race, idx) => (
-                  <div key={idx} className="flex flex-col items-center gap-2">
-                    {race.logo?.secure_url ? (
-                      <img src={race.logo.secure_url} alt={race.name} className="h-12 object-contain" />
-                    ) : (
-                      <div className="h-12 w-24 bg-white/10 rounded flex items-center justify-center text-xs">Logo</div>
-                    )}
-                    {getLoc(race.name) && <span className="text-white/80 text-sm font-semibold tracking-wide text-center max-w-[200px]">{getLoc(race.name)}</span>}
-                  </div>
-                ))}
+                {activeVehicle.races.map((race, idx) => {
+                  const content = (
+                    <div className="flex flex-col items-center gap-3 hover:scale-105 transition-transform duration-300">
+                      {race.logo?.secure_url ? (
+                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                          <img src={race.logo.secure_url} alt={getLoc(race.name)} className="w-3/4 h-3/4 object-contain" />
+                        </div>
+                      ) : (
+                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                          <span className="text-white/40 text-[10px]">Logo</span>
+                        </div>
+                      )}
+                      <span className="text-white/80 font-medium text-xs md:text-sm text-center tracking-wide">
+                        {getLoc(race.name)}
+                      </span>
+                    </div>
+                  );
+                  return race.url ? (
+                    <a key={idx} href={race.url} target="_blank" rel="noopener noreferrer">
+                      {content}
+                    </a>
+                  ) : (
+                    <div key={idx}>{content}</div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -298,17 +326,17 @@ export default function CarsPage() {
       {/* Sponsors */}
       <div className="mt-20">
         {activeVehicle.sponsorTiers && activeVehicle.sponsorTiers.length > 0 && (
-           <div className="text-center mb-10">
-              <h2 className="text-4xl font-extrabold text-white tracking-widest uppercase">{activeVehicle.name} SPONSORLARI</h2>
-           </div>
+          <div className="text-center mb-10">
+            <h2 className="text-4xl font-extrabold text-white tracking-widest uppercase">{activeVehicle.name} SPONSORLARI</h2>
+          </div>
         )}
         {activeVehicle.sponsorTiers && activeVehicle.sponsorTiers.map((tier, idx) => (
-          <SponsorTier 
-            key={idx} 
-            title={getLoc(tier.tierName)} 
-            items={tier.logos} 
-            bg={sponsorBgs[idx % sponsorBgs.length]} 
-            size={idx === 0 ? 'xl' : idx === 1 ? 'lg' : 'md'} 
+          <SponsorTier
+            key={idx}
+            title={getLoc(tier.tierName)}
+            items={tier.logos}
+            bg={sponsorBgs[idx % sponsorBgs.length]}
+            size={idx === 0 ? 'xl' : idx === 1 ? 'lg' : 'md'}
           />
         ))}
       </div>

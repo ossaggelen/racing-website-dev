@@ -46,7 +46,8 @@ export const vehicle = {
           type: 'object',
           fields: [
             {name: 'logo', title: 'Logo', type: 'cloudinary.asset'},
-            {name: 'name', title: 'Race Name', type: 'localeString'}
+            {name: 'name', title: 'Race Name', type: 'localeString'},
+            {name: 'url', title: 'Website URL', type: 'url'}
           ]
         }
       ]
@@ -83,7 +84,15 @@ export const vehicle = {
               name: 'logos',
               title: 'Sponsor Logos',
               type: 'array',
-              of: [{type: 'cloudinary.asset'}]
+              of: [
+                {
+                  type: 'object',
+                  fields: [
+                    {name: 'logo', title: 'Logo', type: 'cloudinary.asset'},
+                    {name: 'url', title: 'Website URL', type: 'url'}
+                  ]
+                }
+              ]
             }
           ]
         }
