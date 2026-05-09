@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useI18n } from '../i18n.jsx'
 
 function Logo() {
   // Stylised "ITU" mark — thin vertical-bar letterforms with cyan dot accents
   // and "R·A·C·I·N·G" beneath in spaced caps
   return (
-    <a href="#/" className="flex flex-col items-start leading-none select-none">
+    <Link to="/" className="flex flex-col items-start leading-none select-none">
       <svg width="92" height="46" viewBox="0 0 92 46" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="ITU Racing">
         {/* I */}
         <rect x="2" y="2" width="14" height="3" fill="#fff" />
@@ -31,32 +32,29 @@ function Logo() {
       <span className="text-[9px] tracking-[0.42em] text-white mt-1.5 font-semibold">
         R·A·C·I·N·G
       </span>
-    </a>
+    </Link>
   )
 }
 
 export default function Navbar() {
   const { lang, setLang, t } = useI18n()
+  const location = useLocation()
   const links = [
-    { href: '#/', key: 'home', match: ['', '#/', '#'] },
-    { href: '#/formula-student', key: 'formulaStudent', match: ['#/formula-student'] },
-    { href: '#/cars', key: 'cars', match: ['#/cars'] },
-    { href: '#/sponsors', key: 'sponsors', match: ['#/sponsors'] },
-    { href: '#/team', key: 'team', match: ['#/team'] },
-    { href: '#/contact', key: 'contact', match: ['#/contact'] },
+    { to: '/', key: 'home' },
+    { to: '/formula-student', key: 'formulaStudent' },
+    { to: '/cars', key: 'cars' },
+    { to: '/sponsors', key: 'sponsors' },
+    { to: '/team', key: 'team' },
+    { to: '/contact', key: 'contact' },
   ]
 
   const [open, setOpen] = useState(false)
   const [langOpen, setLangOpen] = useState(false)
-  const [hash, setHash] = useState(typeof window !== 'undefined' ? window.location.hash : '')
 
-  useEffect(() => {
-    const onHash = () => setHash(window.location.hash)
-    window.addEventListener('hashchange', onHash)
-    return () => window.removeEventListener('hashchange', onHash)
-  }, [])
-
-  const isActive = (l) => l.match.includes(hash) || (l.href === '#/' && hash === '')
+  const isActive = (link) =>
+    link.to === '/'
+      ? location.pathname === '/'
+      : location.pathname.startsWith(link.to)
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-white/10">
@@ -71,15 +69,15 @@ export default function Navbar() {
           {links.map((l) => {
             const active = isActive(l)
             return (
-              <a
-                key={l.href}
-                href={l.href}
+              <Link
+                key={l.to}
+                to={l.to}
                 className={`text-[15px] tracking-wide transition-colors ${
                   active ? 'text-accent' : 'text-white hover:text-accent'
                 }`}
               >
                 {t.nav[l.key]}
-              </a>
+              </Link>
             )
           })}
         </nav>
@@ -132,14 +130,14 @@ export default function Navbar() {
       {open && (
         <nav className="md:hidden bg-black border-t border-white/10">
           {links.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
+            <Link
+              key={l.to}
+              to={l.to}
               onClick={() => setOpen(false)}
               className="block px-6 py-4 text-sm tracking-wide border-b border-white/5 hover:bg-white/5"
             >
               {t.nav[l.key]}
-            </a>
+            </Link>
           ))}
           <div className="flex gap-3 px-6 py-4">
             {['tr', 'en'].map((l) => (

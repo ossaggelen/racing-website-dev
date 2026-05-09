@@ -1,56 +1,26 @@
-import { useState, useEffect } from 'react'
+import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
-import Hero from './components/Hero'
-import About from './components/About'
-import Stats from './components/Stats'
-import Cars from './components/Cars'
 import Footer from './components/Footer'
-import CarsPage from './components/CarsPage'
-import FormulaStudentPage from './components/FormulaStudentPage'
-import SponsorsPage from './components/SponsorsPage'
-import TeamPage from './components/TeamPage'
-import ContactPage from './components/ContactPage'
-
-function useHashRoute() {
-  const [hash, setHash] = useState(
-    typeof window !== 'undefined' ? window.location.hash : ''
-  )
-  useEffect(() => {
-    const onHash = () => {
-      setHash(window.location.hash)
-      window.scrollTo({ top: 0, behavior: 'instant' })
-    }
-    window.addEventListener('hashchange', onHash)
-    return () => window.removeEventListener('hashchange', onHash)
-  }, [])
-  return hash
-}
+import HomePage from './pages/HomePage'
+import CarsPage from './pages/CarsPage'
+import FormulaStudentPage from './pages/FormulaStudentPage'
+import SponsorsPage from './pages/SponsorsPage'
+import TeamPage from './pages/TeamPage'
+import ContactPage from './pages/ContactPage'
 
 export default function App() {
-  const hash = useHashRoute()
-
   return (
     <div className="min-h-screen bg-bg">
       <Navbar />
       <main>
-        {hash === '#/cars' ? (
-          <CarsPage />
-        ) : hash === '#/formula-student' ? (
-          <FormulaStudentPage />
-        ) : hash === '#/sponsors' ? (
-          <SponsorsPage />
-        ) : hash === '#/team' ? (
-          <TeamPage />
-        ) : hash === '#/contact' ? (
-          <ContactPage />
-        ) : (
-          <>
-            <Hero />
-            <About />
-            <Stats />
-            <Cars />
-          </>
-        )}
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/formula-student" element={<FormulaStudentPage />} />
+          <Route path="/cars" element={<CarsPage />} />
+          <Route path="/sponsors" element={<SponsorsPage />} />
+          <Route path="/team" element={<TeamPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+        </Routes>
       </main>
       <Footer />
     </div>
