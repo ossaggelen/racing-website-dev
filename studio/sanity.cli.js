@@ -4,5 +4,6 @@ export default defineCliConfig({
   api: {
     projectId: '7898q55i',
     dataset: 'production'
-  }
+  },
+  studioHost: 'racing-website'
 })

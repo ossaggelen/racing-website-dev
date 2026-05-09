@@ -4,33 +4,43 @@ import CarSideView from '../components/CarSideView.jsx'
 import { client, urlFor } from '../sanityClient.js'
 import { PortableText } from '@portabletext/react'
 
-function SponsorTier({ title, items, bg, size = 'md' }) {
-  const sizeClasses = {
-    xl: 'text-3xl md:text-5xl px-12 py-6 min-w-[260px]',
-    lg: 'text-xl md:text-2xl px-8 py-5 min-w-[180px]',
-    md: 'text-sm md:text-base px-5 py-4 min-w-[120px]',
-    sm: 'text-xs md:text-sm px-4 py-3 min-w-[100px]',
-  }
-
+function SponsorTier({ title, items, bg, tierIndex = 0 }) {
   if (!items || items.length === 0) return null;
 
+  // Tier multiplier: index 0 (ana/main) is biggest, higher index = smaller
+  // Each tier is one step smaller than the previous
+  const tierMultiplier = Math.max(0, 4 - tierIndex) // 4,3,2,1,0 for tiers 0-4
+
+  // Dynamically choose logo container size based on item count + tier rank
+  const getLogoSize = (count) => {
+    // Base sizes for bronze (tierMultiplier=0) → ana/main (tierMultiplier=4)
+    const heights = ['h-20 md:h-28', 'h-24 md:h-32', 'h-28 md:h-36', 'h-32 md:h-44', 'h-40 md:h-52']
+    const widths  = ['w-36 md:w-52', 'w-44 md:w-60', 'w-52 md:w-72', 'w-60 md:w-80', 'w-72 md:w-96']
+
+    // Reduce size if many logos in the same tier
+    let sizeIdx = tierMultiplier
+    if (count >= 8) sizeIdx = Math.max(0, sizeIdx - 2)
+    else if (count >= 5) sizeIdx = Math.max(0, sizeIdx - 1)
+
+    return `${heights[sizeIdx]} ${widths[sizeIdx]}`
+  }
+
+  const logoSizeClass = getLogoSize(items.length)
+
   return (
-    <section className={`${bg} py-14 px-6`}>
+    <section className={`${bg} py-12 px-6`}>
       <div className="max-w-6xl mx-auto">
-        <h3 className="font-display text-2xl md:text-3xl text-accent tracking-wider mb-10 text-center uppercase">
+        <h3 className="font-display text-xl md:text-2xl text-accent tracking-wider mb-8 text-center uppercase">
           {title}
         </h3>
-        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+        <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
           {items.map((logoItem, idx) => {
-            // Check if it's the new schema (object with .logo and .url) or old schema (direct cloudinary.asset)
             const isNewSchema = !!logoItem.logo;
-            const logoUrl = isNewSchema ? logoItem.logo.secure_url : logoItem.secure_url;
+            const logoUrl = isNewSchema ? logoItem.logo?.secure_url : logoItem.secure_url;
             const link = isNewSchema ? logoItem.url : undefined;
-            
+
             const content = (
-              <div
-                className={`${sizeClasses[size]} rounded flex items-center justify-center hover:scale-105 transition-transform duration-300`}
-              >
+              <div className={`${logoSizeClass} flex items-center justify-center p-3 hover:scale-105 transition-transform duration-300`}>
                 {logoUrl ? (
                   <img src={logoUrl} alt="Sponsor Logo" className="max-h-full max-w-full object-contain" />
                 ) : (
@@ -274,11 +284,11 @@ export default function CarsPage() {
                   const content = (
                     <div className="flex flex-col items-center gap-3 hover:scale-105 transition-transform duration-300">
                       {race.logo?.secure_url ? (
-                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
-                          <img src={race.logo.secure_url} alt={getLoc(race.name)} className="w-3/4 h-3/4 object-contain" />
+                        <div className="w-36 h-20 md:w-48 md:h-28 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden p-3">
+                          <img src={race.logo.secure_url} alt={getLoc(race.name)} className="w-full h-full object-contain" />
                         </div>
                       ) : (
-                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                        <div className="w-36 h-20 md:w-48 md:h-28 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
                           <span className="text-white/40 text-[10px]">Logo</span>
                         </div>
                       )}
@@ -336,7 +346,7 @@ export default function CarsPage() {
             title={getLoc(tier.tierName)}
             items={tier.logos}
             bg={sponsorBgs[idx % sponsorBgs.length]}
-            size={idx === 0 ? 'xl' : idx === 1 ? 'lg' : 'md'}
+            tierIndex={idx}
           />
         ))}
       </div>
