@@ -1,0 +1,39 @@
+# Dependencies
+node_modules
+studio/node_modules
+
+# Build output
+dist
+dist-ssr
+
+# Vite cache
+.vite
+
+# Sanity
+studio/.sanity
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+
+.claude/
+
+# Sanity standalone studio
+studio/
